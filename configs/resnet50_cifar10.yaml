@@ -1,0 +1,11 @@
+defaults:
+  - config
+
+experiment_name: resnet50_cifar10
+
+model:
+  _target_: src.module.resnet50.ResNet50Classifier
+  lr: 1e-3
+
+datamodule:
+  _target_: src.datamodule.cifar10.CIFAR10DataModule
