@@ -14,9 +14,9 @@ $overrides = @(
     "experiment_dir=$experimentDir",
     "hydra.run.dir=$experimentDir",
     "trainer.max_epochs=5",
-    "data.batch_size=256",
-    "data.num_workers=0",
-    "data.data_dir=C://data/MNIST"
+    "datamodule.batch_size=256",
+    "datamodule.num_workers=0",
+    "datamodule.data_dir=C:/data/MNIST"
 )
 
 python src/train.py $overrides *> "$experimentDir\run.log"

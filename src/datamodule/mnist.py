@@ -8,23 +8,27 @@ from src.utils.data_utils import TransformWrapper
 
 
 class MNISTDataModule(pl.LightningDataModule):
-    def __init__(self, data_dir: str, batch_size: int, num_workers: int = 0):
+    def __init__(self, **config):
         super().__init__()
-        self.data_dir = data_dir
-        self.batch_size = batch_size
-        self.num_workers = num_workers
+        self.data_dir = config["data_dir"]
+        self.batch_size = config["batch_size"]
+        self.num_workers = config["num_workers"]
+
+        # Standard MNIST stats
+        mean = (0.1307,)
+        std = (0.3081,)
 
         self.train_xform = transforms.Compose(
             [
                 transforms.ToTensor(),
-                transforms.Normalize((0.1307,), (0.3081,)),
+                transforms.Normalize(mean, std),
             ]
         )
 
         self.test_xform = transforms.Compose(
             [
                 transforms.ToTensor(),
-                transforms.Normalize((0.1307,), (0.3081,)),
+                transforms.Normalize(mean, std),
             ]
         )
 

@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 from sklearn.metrics import classification_report
 
 
-class SimpleMNISTClassifier(pl.LightningModule):
+class SimpleClassifier(pl.LightningModule):
     def __init__(self, **config):
         super().__init__()
         self.save_hyperparameters()
@@ -19,7 +19,7 @@ class SimpleMNISTClassifier(pl.LightningModule):
             nn.Flatten(),
             nn.Linear(28 * 28, 256),
             nn.ReLU(),
-            nn.Linear(256, 10),
+            nn.Linear(256, config["num_classes"]),
         )
 
         self.test_step_outputs = []
@@ -33,25 +33,21 @@ class SimpleMNISTClassifier(pl.LightningModule):
         loss = F.cross_entropy(logits, y)
         preds = logits.argmax(dim=-1)
         acc = (preds == y).float().mean()
-        return loss, acc
+        return loss, acc, y, preds
 
     def training_step(self, batch: Any, batch_idx: int) -> torch.Tensor:
-        loss, acc = self._shared_step(batch, batch_idx)
+        loss, acc, _, _ = self._shared_step(batch, batch_idx)
         self.log("train_loss", loss, prog_bar=True)
         self.log("train_acc", acc, prog_bar=True)
         return loss
 
     def validation_step(self, batch: Any, batch_idx: int):
-        loss, acc = self._shared_step(batch, batch_idx)
+        loss, acc, _, _ = self._shared_step(batch, batch_idx)
         self.log("val_loss", loss, prog_bar=True)
         self.log("val_acc", acc, prog_bar=True)
 
     def test_step(self, batch: Any, batch_idx: int):
-        x, y = batch
-        logits = self(x)
-        loss = F.cross_entropy(logits, y)
-        preds = logits.argmax(dim=-1)
-        acc = (preds == y).float().mean()
+        loss, acc, y, preds = self._shared_step(batch, batch_idx)
         self.log("test_loss", loss, prog_bar=True)
         self.log("test_acc", acc, prog_bar=True)
         self.test_step_outputs.append({

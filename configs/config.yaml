@@ -9,17 +9,16 @@ model:
     _partial_: true
     lr: 1e-3
     weight_decay: 1e-5
+  num_classes: 10
 
 datamodule:
   _target_: src.datamodule.mnist.MNISTDataModule
+  data_dir: ./data
+  batch_size: 64
+  num_workers: 0
 
 trainer:
   max_epochs: 2
   accelerator: auto
   devices: 1
   log_every_n_steps: 10
-
-data:
-  data_dir: ./data
-  batch_size: 64
-  num_workers: 0

@@ -5,7 +5,12 @@ experiment_name: resnet18_cifar10
 
 model:
   _target_: src.module.resnet18.ResNet18Classifier
-  lr: 1e-3
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 1e-3
+    weight_decay: 1e-5
+  num_classes: 10
 
 datamodule:
   _target_: src.datamodule.cifar10.CIFAR10DataModule
