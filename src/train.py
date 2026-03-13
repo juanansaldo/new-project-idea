@@ -33,7 +33,7 @@ def main(cfg: DictConfig) -> None:
         name=cfg.experiment_name,
     )
 
-    datamodule = hydra.utils.instantiate(cfg.datamodule, **cfg.data)
+    datamodule = hydra.utils.instantiate(cfg.datamodule)
     model = hydra.utils.instantiate(cfg.model)
 
     trainer = pl.Trainer(

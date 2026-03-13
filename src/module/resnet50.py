@@ -4,7 +4,7 @@ from torchvision import models
 from src.module.simple_classifier import SimpleClassifier
 
 
-class ResNet18Classifier(SimpleClassifier):
+class ResNet50Classifier(SimpleClassifier):
     def __init__(self, **config):
         super().__init__(**config)
 

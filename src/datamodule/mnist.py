@@ -13,6 +13,8 @@ class MNISTDataModule(pl.LightningDataModule):
         self.data_dir = config["data_dir"]
         self.batch_size = config["batch_size"]
         self.num_workers = config["num_workers"]
+        
+        self.persistent_workers = True if self.num_workers > 0 else False
 
         # Standard MNIST stats
         mean = (0.1307,)
@@ -63,6 +65,7 @@ class MNISTDataModule(pl.LightningDataModule):
             num_workers=self.num_workers,
             drop_last=True,
             pin_memory=True,
+            persistent_workers=self.persistent_workers,
         )
 
     def val_dataloader(self):
@@ -72,6 +75,7 @@ class MNISTDataModule(pl.LightningDataModule):
             shuffle=False,
             num_workers=self.num_workers,
             pin_memory=True,
+            persistent_workers=self.persistent_workers,
         )
 
     def test_dataloader(self):
@@ -81,4 +85,5 @@ class MNISTDataModule(pl.LightningDataModule):
             shuffle=False,
             num_workers=self.num_workers,
             pin_memory=True,
+            persistent_workers=self.persistent_workers,
         )

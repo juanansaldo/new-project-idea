@@ -3,7 +3,7 @@ experiment_dir: null
 seed: 42
 
 model:
-  _target_: src.module.simple_classifier.SimpleMNISTClassifier
+  _target_: src.module.simple_classifier.SimpleClassifier
   optimizer:
     _target_: torch.optim.Adam
     _partial_: true

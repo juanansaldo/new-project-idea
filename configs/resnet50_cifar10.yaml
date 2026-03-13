@@ -1,5 +1,6 @@
 defaults:
   - config
+  - _self_
 
 experiment_name: resnet50_cifar10
 
