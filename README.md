@@ -4,44 +4,47 @@ A config-driven deep learning training pipeline for image classification. The pr
 
 ## What it does
 
-- Trains image classifiers on **MNIST** and **CIFAR-10** using a unified configuration and training pipeline.
+- Trains image classifiers on **MNIST**, **CIFAR-10**, and **ImageNet** using a unified configuration and training pipeline.
 - Lets you choose **model**, **datamodule**, and **optimizer** from YAML; no code changes needed to switch between a simple MLP and **ResNet-18/ResNet-50**.
+- **ImageNet** is loaded from WebDataset `.tar` shards (streaming); use `misc/` scripts to convert raw ImageNet into that format.
 - Runs training and test in one go; after testing, prints a single **sklearn classification report** over the full test set.
 - Writes each run into a timestamped folder under `experiments/` (config copy, Lightning logs, run log).
-- Ships helper scripts in `misc/` to prepare **ImageNet** and convert it into an indexed WebDataset format for future ingestion.
 
 ## Project structure
 
 ```text
-configs/                  # Hydra configs (one per experiment type)
-  config.yaml             # Default: MNIST + simple classifier
-  resnet18_cifar10.yaml   # CIFAR-10 + ResNet-18
-  resnet50_cifar10.yaml   # CIFAR-10 + ResNet-50
+configs/                    # Hydra configs (one per experiment type)
+  config.yaml               # Default: MNIST + simple classifier
+  resnet18_cifar10.yaml     # CIFAR-10 + ResNet-18
+  resnet50_cifar10.yaml     # CIFAR-10 + ResNet-50
+  resnet50_imagenet.yaml    # ImageNet + ResNet-50 (WebDataset .tar shards)
 
 src/
-  train.py                # Entrypoint: Hydra + Lightning
-  module/                 # LightningModules (models)
-    simple_classifier.py  # Shared training logic + MLP head
+  train.py                  # Entrypoint: Hydra + Lightning
+  module/                   # LightningModules (models)
+    simple_classifier.py    # Shared training logic + MLP head
     resnet18.py
     resnet50.py
-  datamodule/             # LightningDataModules
+  datamodule/               # LightningDataModules
     mnist.py
     cifar10.py
+    imagenet.py             # ImageNet via streaming WebDataset
   utils/
-    data_utils.py         # e.g. TransformWrapper
+    data_utils.py           # e.g. TransformWrapper
 
 scripts/
-  run_experiment.ps1      # Run from project root, writes to experiments/<name>_<timestamp>
+  run_experiment.ps1        # Run from project root, writes to experiments/<name>_<timestamp>
 
-experiments/              # One folder per run (created by script)
-  mnist_2026.../
+experiments/                # One folder per run (created by script)
+  <name>_<timestamp>/
     run.log
     config.yaml
     lightning_logs/
 
-misc/                     # ImageNet preparation + WebDataset conversion
-  prepare_imagenet.ps1
-  imagenet_to_webdataset.py
+misc/                       # ImageNet preparation + WebDataset conversion
+  prepare_imagenet.ps1      # Extract / organize raw ImageNet
+  imagenet_to_webdataset.py # Convert to .tar shards (+ optional index)
+  imagenet_to_webdataset.ps1
 ```
 
 ## Setup
@@ -79,6 +82,8 @@ python src/train.py --config-name=resnet18_cifar10
 ```
 
 Edit `$experimentName`, `$configName`, `$dataDir`, and the overrides array in the script to change the run. The script sets `experiment_dir` and `hydra.run.dir` so all artifacts go under `experiments/<name>_<timestamp>/`, and measures wall-clock runtime for each experiment.
+
+**ImageNet:** Data must be in WebDataset form (`.tar` shards named e.g. `imagenet-train-000000.tar`, `imagenet-val-000000.tar`). Use `misc/prepare_imagenet.ps1` to extract/organize raw ILSVRC data, then `misc/imagenet_to_webdataset.py` to build the shards. Set `datamodule.data_dir` (or `$dataDir` in the script) to the directory containing those tars and run with `--config-name=resnet50_imagenet`.
 
 ## Config
 

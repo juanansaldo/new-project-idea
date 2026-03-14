@@ -1,0 +1,82 @@
+from pathlib import Path
+from typing import Optional
+
+import webdataset as wds
+from torch.utils.data import DataLoader
+from torchvision import transforms
+
+from src.datamodule.mnist import MNISTDataModule
+
+
+class ImageNetDataModule(MNISTDataModule):
+    def __init__(self, **config):
+        super().__init__(**config)
+
+        # Standard IMAGENET stats
+        mean = (0.485, 0.456, 0.406)
+        std = (0.229, 0.224, 0.225)
+        
+        image_size = 224
+        self.train_xform = transforms.Compose(
+            [
+                transforms.RandomResizedCrop(image_size),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ]
+        )
+        self.test_xform = transforms.Compose(
+            [
+                transforms.Resize(256),
+                transforms.CenterCrop(image_size),
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std),
+            ]
+        )
+    
+    def prepare_data(self):
+       pass
+
+    def _make_dataset(self, split: str, transform):
+        root = Path(self.data_dir).resolve()
+        shard_paths = sorted(root.glob(f"imagenet-{split}-*.tar"))
+        if not shard_paths:
+            raise FileNotFoundError(f"No shards found in {root} matching imagenet-{split}-*.tar")
+        shards = [f"file:{p.as_posix()}" for p in shard_paths]
+
+        def _decode_sample(sample):
+            img, cls = sample
+            x = transform(img)
+            if isinstance(cls, bytes):
+                y = int(cls.decode().strip())
+            else:
+                y = int(cls)
+            return x, y
+
+        dataset = (
+            wds.WebDataset(shards)
+            .shuffle(10000)
+            .decode("pil")
+            .to_tuple("jpg", "cls")
+            .map(_decode_sample)
+        )
+        return dataset
+
+    def setup(self, stage: Optional[str] = None):
+        if stage == "fit" or stage is None:
+            self.train_dataset = self._make_dataset("train", self.train_xform)
+            self.val_dataset = self._make_dataset("val", self.test_xform)
+        
+        if stage == "test" or stage is None:
+            self.test_dataset = self._make_dataset("test", self.test_xform)
+
+    def train_dataloader(self):
+        return DataLoader(
+            self.train_dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+            drop_last=True,
+            pin_memory=True,
+            persistent_workers=self.persistent_workers,
+        )

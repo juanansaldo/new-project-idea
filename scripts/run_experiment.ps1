@@ -1,10 +1,10 @@
-$experimentName = "mnist"
-$configName = "config"
+$experimentName = "resnet50_imagenet"
+$configName = "resnet50_imagenet"
 
-$max_epochs = "2"
-$batch_size = "256"
+$max_epochs = "1"
+$batch_size = "128"
 $num_workers = "0"
-$dataDir = "C:/data/MNIST"
+$dataDir = "C:/data/IMAGENET1k_tar"
 
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $experimentDir =(Resolve-Path ".").Path + "\experiments\$experimentName`_$timestamp"

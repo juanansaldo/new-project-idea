@@ -100,6 +100,14 @@ if (Test-Path $test_tar) {
     if (-not (Get-ChildItem $test_dir -Filter '*.JPEG' -ErrorAction SilentlyContinue)) {
         Write-Host "Extracting test tar: $test_tar -> $test_dir"
         tar -xf $test_tar -C $test_dir
+        # Flatten: if archive had a single top-level dir (e.g. test/), move contents up
+        $subdirs = Get-ChildItem $test_dir -Directory
+        if ($subdirs.Count -eq 1) {
+            $inner = $subdirs[0]
+            Write-Host "Flattening $($inner.Name) -> $test_dir"
+            Move-Item -Path (Join-Path $inner.FullName '*') -Destination $test_dir -Force
+            Remove-Item $inner.FullName -Force
+        }
     } else {
         Write-Host "Test images already present in $test_dir"
     }

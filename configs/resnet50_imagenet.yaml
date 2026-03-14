@@ -1,0 +1,17 @@
+defaults:
+  - config
+  - _self_
+
+experiment_name: resnet50_imagenet
+
+model:
+  _target_: src.module.resnet50.ResNet50Classifier
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 1e-3
+    weight_decay: 1e-4
+  num_classes: 1000
+
+datamodule:
+  _target_: src.datamodule.imagenet.ImageNetDataModule

@@ -7,6 +7,7 @@ import os
 import tarfile
 from pathlib import Path
 
+import numpy as np
 from PIL import Image
 from scipy.io import loadmat
 
@@ -21,20 +22,27 @@ def _find_single(path: Path, pattern: str) -> Path:
 
 def load_devkit_meta(devkit_root: Path) -> dict[str, int]:
     """
-    Build wordnet_id -> 0-based class index from devkit meta.mat.
-
-    devkit_root should be something like:
-      C:/data/IMAGENET1K/devkit_t12
-    This function will search recursively for meta.mat.
+    Build wordnet_id (WNID) -> 0-based class index from devkit meta.mat.
+    Train dirs are named by WNID; we need WNID -> index, not ILSVRC2012_ID.
     """
-    meta_path = _find_single(devkit_root, "meta.mat")
+    meta_path = _find_single(Path(devkit_root), "meta.mat")
     meta = loadmat(str(meta_path), squeeze_me=True, struct_as_record=False)
     synsets = meta["synsets"]
-    if hasattr(synsets, "ILSVRC2012_ID"):
-        ids = synsets.ILSVRC2012_ID
+
+    # Get WNID and ILSVRC2012_ID for each synset (may be 1000 + 860 high-level)
+    if hasattr(synsets, "WNID"):
+        wnids = np.atleast_1d(synsets.WNID)
+        ids = np.atleast_1d(synsets.ILSVRC2012_ID)
     else:
-        ids = [s.ILSVRC2012_ID for s in synsets]
-    return {str(wid): i for i, wid in enumerate(ids)}
+        wnids = np.array([s.WNID for s in np.atleast_1d(synsets)])
+        ids = np.array([s.ILSVRC2012_ID for s in np.atleast_1d(synsets)])
+
+    # Only low-level synsets (ILSVRC2012_ID 1..1000); map WNID -> 0-based index
+    out = {}
+    for i, (wid, ilsvrc_id) in enumerate(zip(wnids, ids)):
+        if 1 <= int(ilsvrc_id) <= 1000:
+            out[str(wid).strip()] = int(ilsvrc_id) - 1
+    return out
 
 
 def load_val_ground_truth(devkit_root: Path) -> list[int]:

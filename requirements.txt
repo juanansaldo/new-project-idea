@@ -8,3 +8,4 @@ scikit-learn
 webdataset
 pillow
 scipy
+wids
