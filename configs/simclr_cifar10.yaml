@@ -14,6 +14,7 @@ model:
     weight_decay: 1e-5
   num_classes: 10
   data: CIFAR10
+  temperature: 0.5
 
 datamodule:
   _target_: src.datamodule.simclr_cifar10.SimCLRCIFAR10DataModule

@@ -4,6 +4,7 @@ $configName = "simclr_imagenet"
 $max_epochs = "2"
 $batch_size = "128"
 $num_workers = "0"
+$temperature = "0.5"
 $dataDir = "C:/data/IMAGENET1K_tar"
 
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
@@ -21,7 +22,8 @@ $overrides = @(
     "trainer.max_epochs=$max_epochs",
     "datamodule.batch_size=$batch_size",
     "datamodule.num_workers=$num_workers",
-    "datamodule.data_dir=$dataDir"
+    "datamodule.data_dir=$dataDir",
+    "model.temperature=$temperature"
 )
 
 $sw = [System.Diagnostics.Stopwatch]::StartNew()

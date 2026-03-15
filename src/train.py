@@ -38,14 +38,7 @@ def main(cfg: DictConfig) -> None:
     datamodule = hydra.utils.instantiate(cfg.datamodule)
     model = hydra.utils.instantiate(cfg.model)
 
-    trainer = pl.Trainer(
-        max_epochs=cfg.trainer.max_epochs,
-        accelerator=cfg.trainer.accelerator,
-        devices=cfg.trainer.devices,
-        log_every_n_steps=cfg.trainer.log_every_n_steps,
-        logger=logger,
-        callbacks=callbacks,
-    )
+    trainer = hydra.utils.instantiate(cfg.trainer, logger=logger, callbacks=callbacks)
 
     trainer.fit(model=model, datamodule=datamodule)
 

@@ -32,10 +32,16 @@ class SimCLR(pl.LightningModule):
         self.backbone = backbone
         
         #
-        self.projection_head = SimCLRProjectionHead(2048, 2048, 128)
+        self.projection_head = SimCLRProjectionHead(
+            input_dim=2048, 
+            hidden_dim=2048,
+            output_dim=128,
+            num_layers=2,
+            batch_norm=True,
+        )
         
         #
-        self.criterion = NTXentLoss()
+        self.criterion = NTXentLoss(temperature=config["temperature"])
 
         self.test_step_outputs = []
 

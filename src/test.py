@@ -47,11 +47,7 @@ def main(cfg: DictConfig) -> None:
     datamodule = hydra.utils.instantiate(cfg.datamodule)
     datamodule.setup("test")
 
-    trainer = pl.Trainer(
-        accelerator=cfg.trainer.accelerator,
-        devices=cfg.trainer.devices,
-        logger=logger,
-    )
+    trainer = hydra.utils.instantiate(cfg.trainer, logger=logger)
 
     for name, ckpt_path in to_run:
         print(f"\n--- Testing checkpoint: {name} ({ckpt_path.name}) ---")

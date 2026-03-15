@@ -46,8 +46,6 @@ class SimCLRImageNetDataModule(pl.LightningDataModule):
         )
 
         self.train_dataset = None
-        self.val_dataset = None
-        self.test_dataset = None
     
     def prepare_data(self):
        pass
