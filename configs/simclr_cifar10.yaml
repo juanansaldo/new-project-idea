@@ -1,0 +1,29 @@
+defaults:
+  - config
+  - _self_
+
+experiment_name: SimCLR_CIFAR10
+ssl: true
+
+model:
+  _target_: src.module.simclr.SimCLR
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 1e-3
+    weight_decay: 1e-5
+  num_classes: 10
+  data: CIFAR10
+
+datamodule:
+  _target_: src.datamodule.simclr_cifar10.SimCLRCIFAR10DataModule
+
+trainer:
+  callbacks:
+    - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+      dirpath: checkpoints
+      filename: best-{epoch:02d}-{train_loss:.4f}
+      monitor: train_loss
+      mode: min
+      save_top_k: 1
+      save_last: true

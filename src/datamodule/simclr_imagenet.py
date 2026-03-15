@@ -1,38 +1,53 @@
+# Source: https://arxiv.org/pdf/2002.05709
 from pathlib import Path
 from typing import Optional
 
 import webdataset as wds
-from torch.utils.data import DataLoader
 from torchvision import transforms
+from torch.utils.data import DataLoader
 
-from src.datamodule.mnist import MNISTDataModule
+import pytorch_lightning as pl
 
 
-class ImageNetDataModule(MNISTDataModule):
+class SimCLRImageNetDataModule(pl.LightningDataModule):
     def __init__(self, **config):
-        super().__init__(**config)
+        super().__init__()
 
-        # Standard IMAGENET stats
+        self.data_dir = config["data_dir"]
+        self.batch_size = config["batch_size"]
+        self.num_workers = config["num_workers"]
+        
+        self.persistent_workers = True if self.num_workers > 0 else False
+
+        # Standard ImageNet stats
         mean = (0.485, 0.456, 0.406)
         std = (0.229, 0.224, 0.225)
-        
-        image_size = 224
+
+        s = 1.0           #
+        image_size = 224  #
         self.train_xform = transforms.Compose(
             [
-                transforms.RandomResizedCrop(image_size),
-                transforms.RandomHorizontalFlip(),
+                transforms.RandomResizedCrop(
+                    image_size,
+                    scale=(0.08, 1.0),
+                    ratio=(3.0/4, 4.0/3)
+                ),
+                transforms.RandomHorizontalFlip(p=0.5),
+                transforms.RandomApply([
+                    transforms.ColorJitter(0.8*s, 0.8*s, 0.8*s, 0.2*s)
+                ], p=0.8),
+                transforms.RandomGrayscale(p=0.2),
+                transforms.RandomApply([
+                    transforms.GaussianBlur(kernel_size=23, sigma=(0.1, 2.0))
+                ], p=0.5),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ]
         )
-        self.test_xform = transforms.Compose(
-            [
-                transforms.Resize(256),
-                transforms.CenterCrop(image_size),
-                transforms.ToTensor(),
-                transforms.Normalize(mean, std),
-            ]
-        )
+
+        self.train_dataset = None
+        self.val_dataset = None
+        self.test_dataset = None
     
     def prepare_data(self):
        pass
@@ -45,13 +60,8 @@ class ImageNetDataModule(MNISTDataModule):
         shards = [f"file:{p.as_posix()}" for p in shard_paths]
 
         def _decode_sample(sample):
-            img, cls = sample
-            x = transform(img)
-            if isinstance(cls, bytes):
-                y = int(cls.decode().strip())
-            else:
-                y = int(cls)
-            return x, y
+            img, _ = sample
+            return transform(img), transform(img)
 
         dataset = (
             wds.WebDataset(shards)
@@ -65,11 +75,7 @@ class ImageNetDataModule(MNISTDataModule):
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
             self.train_dataset = self._make_dataset("train", self.train_xform)
-            self.val_dataset = self._make_dataset("val", self.test_xform)
-        
-        if stage == "test" or stage is None:
-            self.test_dataset = self._make_dataset("test", self.test_xform)
-
+    
     def train_dataloader(self):
         return DataLoader(
             self.train_dataset,

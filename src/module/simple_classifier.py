@@ -3,7 +3,6 @@ from typing import Any
 import torch
 import numpy as np
 from torch import nn
-import torch.nn.functional as F
 import pytorch_lightning as pl
 from sklearn.metrics import classification_report
 
@@ -14,6 +13,7 @@ class SimpleClassifier(pl.LightningModule):
         self.save_hyperparameters()
 
         self.optimizer = config["optimizer"]
+        self.criterion = nn.CrossEntropyLoss()
         
         self.model = nn.Sequential(
             nn.Flatten(),
@@ -30,7 +30,7 @@ class SimpleClassifier(pl.LightningModule):
     def _shared_step(self, batch: Any, batch_idx: int):
         x, y = batch
         logits = self(x)
-        loss = F.cross_entropy(logits, y)
+        loss = self.criterion(logits, y)
         preds = logits.argmax(dim=-1)
         acc = (preds == y).float().mean()
         return loss, acc, y, preds

@@ -14,4 +14,4 @@ model:
   num_classes: 1000
 
 datamodule:
-  _target_: src.datamodule.imagenet.ImageNetDataModule
+  _target_: src.datamodule.default.imagenet.ImageNetDataModule

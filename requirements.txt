@@ -6,6 +6,7 @@ torchvision==0.22.1
 tensorboard
 scikit-learn
 webdataset
+lightly
 pillow
 scipy
 wids

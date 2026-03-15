@@ -14,4 +14,4 @@ model:
   num_classes: 10
 
 datamodule:
-  _target_: src.datamodule.cifar10.CIFAR10DataModule
+  _target_: src.datamodule.default.cifar10.CIFAR10DataModule

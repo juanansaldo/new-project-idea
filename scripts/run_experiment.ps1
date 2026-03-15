@@ -1,10 +1,10 @@
-$experimentName = "resnet50_imagenet"
-$configName = "resnet50_imagenet"
+$experimentName = "mnist"
+$configName = "config"
 
-$max_epochs = "1"
+$max_epochs = "2"
 $batch_size = "128"
 $num_workers = "0"
-$dataDir = "C:/data/IMAGENET1k_tar"
+$dataDir = "C:/data/MNIST"
 
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $experimentDir =(Resolve-Path ".").Path + "\experiments\$experimentName`_$timestamp"
@@ -26,6 +26,7 @@ $overrides = @(
 $sw = [System.Diagnostics.Stopwatch]::StartNew()
 
 python src/train.py $overrides *> "$experimentDir\run.log"
+python src/test.py  $overrides *>> "$experimentDir\run.log"
 
 $sw.Stop()
 $elapsed = $sw.Elapsed

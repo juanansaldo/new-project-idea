@@ -5,7 +5,6 @@ from omegaconf import DictConfig, OmegaConf
 
 import torch
 import pytorch_lightning as pl
-from pytorch_lightning.loggers import TensorBoardLogger
 
 
 torch.set_float32_matmul_precision("medium")
@@ -22,16 +21,19 @@ def main(cfg: DictConfig) -> None:
 
     pl.seed_everything(cfg.seed)
 
+    callbacks = hydra.utils.instantiate(cfg.trainer.get("callbacks", [])) or []
+
     experiment_dir = Path(cfg.experiment_dir) if cfg.get("experiment_dir") else None
     if experiment_dir is not None:
-        save_dir = str(experiment_dir / "lightning_logs")
-    else:
-        save_dir = "lightning_logs"
+        checkpoint_dir = experiment_dir / "checkpoints"
+        checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        for cb in callbacks:
+            if isinstance(cb, pl.callbacks.ModelCheckpoint):
+                cb.dirpath = str(checkpoint_dir)
 
-    logger = TensorBoardLogger(
-        save_dir=save_dir,
-        name=cfg.experiment_name,
-    )
+    if experiment_dir is not None:
+        cfg.logger.save_dir = str(experiment_dir / "lightning_logs")
+    logger = hydra.utils.instantiate(cfg.logger)
 
     datamodule = hydra.utils.instantiate(cfg.datamodule)
     model = hydra.utils.instantiate(cfg.model)
@@ -42,10 +44,10 @@ def main(cfg: DictConfig) -> None:
         devices=cfg.trainer.devices,
         log_every_n_steps=cfg.trainer.log_every_n_steps,
         logger=logger,
+        callbacks=callbacks,
     )
 
     trainer.fit(model=model, datamodule=datamodule)
-    trainer.test(model=model, datamodule=datamodule)
 
 
 if __name__ == "__main__":
