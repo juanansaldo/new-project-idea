@@ -1,10 +1,10 @@
-$experimentName = "mnist"
-$configName = "config"
+$experimentName = "resnet50_cifar10"
+$configName = "resnet50_cifar10"
 
 $max_epochs = "2"
 $batch_size = "128"
 $num_workers = "0"
-$dataDir = "C:/data/MNIST"
+$dataDir = "C:/data/CIFAR10"
 
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $experimentDir =(Resolve-Path ".").Path + "\experiments\$experimentName`_$timestamp"
@@ -12,6 +12,7 @@ $experimentDir =(Resolve-Path ".").Path + "\experiments\$experimentName`_$timest
 New-Item -ItemType Directory -Force -Path $experimentDir | Out-Null
 
 $env:HYDRA_FULL_ERROR = "1"
+
 $overrides = @(
     "--config-name=$configName",
     "experiment_name=$experimentName",

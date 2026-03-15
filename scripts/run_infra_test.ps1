@@ -8,9 +8,11 @@ $env:HYDRA_FULL_ERROR = "1"
 
 $runs = @(
     @{ ConfigName = "config";            ExperimentName = "mnist";             DataDir = "$dataRoot/MNIST" },
-    @{ ConfigName = "resnet18_cifar10";  ExperimentName = "resnet18_cifar10"; DataDir = "$dataRoot/CIFAR10" },
-    @{ ConfigName = "resnet50_cifar10";  ExperimentName = "resnet50_cifar10"; DataDir = "$dataRoot/CIFAR10" },
-    @{ ConfigName = "simclr_cifar10";    ExperimentName = "simclr_cifar10";   DataDir = "$dataRoot/CIFAR10" }
+    @{ ConfigName = "resnet18_cifar10";  ExperimentName = "resnet18_cifar10";  DataDir = "$dataRoot/CIFAR10" },
+    @{ ConfigName = "resnet50_cifar10";  ExperimentName = "resnet50_cifar10";  DataDir = "$dataRoot/CIFAR10" },
+    @{ ConfigName = "simclr_cifar10";    ExperimentName = "simclr_cifar10";    DataDir = "$dataRoot/CIFAR10" }
+    # @{ ConfigName = "resnet50_imagenet"; ExperimentName = "resnet50_imagenet"; DataDir = "$dataRoot/IMAGENET1K_tar"},
+    # @{ ConfigName = "simclr_imagenet";   ExperimentName = "simclr_imagenet";   DataDir = "$dataRoot/IMAGENET1k_tar"}
 )
 
 $projectRoot = (Resolve-Path ".").Path
