@@ -1,0 +1,21 @@
+defaults:
+  - config
+  - _self_
+
+experiment_name: linear_probe_cifar10
+ssl: false
+
+model:
+  _target_: src.module.linear_probe.LinearProbeClassifier
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 1e-2
+    weight_decay: 0.0
+  num_classes: 10
+  data: CIFAR10
+  pretrained_ckpt: null
+
+datamodule:
+  _target_: src.datamodule.default.cifar10.CIFAR10DataModule
+  data_dir: ./data

@@ -3,7 +3,7 @@ $configName = "resnet50_imagenet"
 
 $max_epochs = "2"
 $batch_size = "128"
-$num_workers = "0"
+$num_workers = "8"
 $dataDir = "C:/data/IMAGENET1K_tar"
 
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"

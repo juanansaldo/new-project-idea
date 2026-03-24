@@ -3,7 +3,7 @@ $configName = "config"
 
 $max_epochs = "2"
 $batch_size = "128"
-$num_workers = "0"
+$num_workers = "4"
 $dataDir = "C:/data/MNIST"
 
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"

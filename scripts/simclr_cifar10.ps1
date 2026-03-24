@@ -1,9 +1,9 @@
 $experimentName = "simclr_cifar10"
 $configName = "simclr_cifar10"
 
-$max_epochs = "2"
-$batch_size = "128"
-$num_workers = "0"
+$max_epochs = "100"
+$batch_size = "256"
+$num_workers = "8"
 $temperature = "0.5"
 $dataDir = "C:/data/CIFAR10"
 

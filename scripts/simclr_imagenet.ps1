@@ -1,9 +1,9 @@
 $experimentName = "simclr_imagenet"
 $configName = "simclr_imagenet"
 
-$max_epochs = "2"
+$max_epochs = "100"
 $batch_size = "128"
-$num_workers = "0"
+$num_workers = "8"
 $temperature = "0.5"
 $dataDir = "C:/data/IMAGENET1K_tar"
 

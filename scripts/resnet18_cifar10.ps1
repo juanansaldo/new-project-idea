@@ -3,7 +3,7 @@ $configName = "resnet18_cifar10"
 
 $max_epochs = "10"
 $batch_size = "256"
-$num_workers = "0"
+$num_workers = "4"
 $dataDir = "C:/data/CIFAR10"
 
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
