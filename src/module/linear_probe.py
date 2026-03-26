@@ -52,6 +52,7 @@ class LinearProbeClassifier(pl.LightningModule):
         self.feature_dim = 2048
         self.classifier = nn.Linear(self.feature_dim, config["num_classes"])
 
+        self.metrics = config.get("metrics_dir", None)
         self.test_step_outputs: List[Dict[str, np.ndarray]] = []
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -101,12 +102,20 @@ class LinearProbeClassifier(pl.LightningModule):
             "classification_report": report,
             "confusion_matrix": confusion_matrix(y_true, y_pred).tolist(),
         }
-        root = Path(self.trainer.default_root_dir) if self.trainer.default_root_dir else Path.cwd()
-        metrics_path = root / "linear_probe_metrics.json"
+        
+        if not self.metrics_dir:
+            raise ValueError("model.metrics_dir is required for LinearProbeClassifier")
+
+        out_dir = Path(self.metrics_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        metrics_path = out_dir / "linear_probe_metrics.json"
         metrics_path.write_text(json.dumps(out, indent=2))
         print(f"Wrote {metrics_path}")
 
         self.test_step_outputs.clear()
+
+        print(report)
 
     def configure_optimizers(self):
         return self.optimizer(self.classifier.parameters())

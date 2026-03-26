@@ -15,6 +15,7 @@ model:
   num_classes: 10
   data: CIFAR10
   pretrained_ckpt: null
+  metrics_dir: ${experiment_dir}
 
 datamodule:
   _target_: src.datamodule.default.cifar10.CIFAR10DataModule

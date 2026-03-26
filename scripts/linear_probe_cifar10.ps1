@@ -1,14 +1,13 @@
 $experimentName = "linear_probe_cifar10"
 $configName = "linear_probe_cifar10"
 
-# Required: Lightning checkpoint from a SimCLR CIFAR-10 pretraining run
-$pretrainedCkpt = "C:\Projects\AI\self-supervised-vision-lab\experiments\simclr_cifar10_20260324_122850\checkpoints\last.ckpt"
-
 $max_epochs = "50"
 $batch_size = "256"
 $num_workers = "8"
-$probe_lr = "1e-2"
 $dataDir = "C:/data/CIFAR10"
+
+# Lightning checkpoint from a SimCLR CIFAR-10 pretraining run
+$pretrainedCkpt = "C:\Projects\AI\self-supervised-vision-lab\experiments\simclr_cifar10_20260325_084710\checkpoints\last.ckpt"
 
 if (-not (Test-Path -LiteralPath $pretrainedCkpt)) {
     Write-Error "pretrained_ckpt not found: $pretrainedCkpt"

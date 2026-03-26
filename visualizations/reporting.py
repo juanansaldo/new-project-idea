@@ -19,7 +19,9 @@ def main() -> None:
     p.add_argument("--title", type=str, default="Linear probe - confusion matrix")
     args = p.parse_args()
 
-    data = json.loads(args.metrics_json.read_text())
+    # PowerShell `Out-File -Encoding UTF8` often writes a UTF-8 BOM.
+    # `utf-8-sig` transparently handles that BOM.
+    data = json.loads(args.metrics_json.read_text(encoding="utf-8-sig"))
     cm = np.array(data["confusion_matrix"])
 
     fig, ax = plt.subplots(figsize=(8, 6))
