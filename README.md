@@ -10,7 +10,7 @@ A config-driven deep learning pipeline for **supervised image classification**, 
 - **ImageNet** is loaded from WebDataset `.tar` shards (streaming). Use `misc/` scripts to convert raw ImageNet into that format.
 - **Training** saves best and last checkpoints under `checkpoints/`; callbacks (ModelCheckpoint, EarlyStopping) are configured in YAML.
 - **Testing** uses `experiment_dir` to find checkpoints; the model is instantiated from config and only the checkpoint **state dict** is loaded. Test runs on both **last** and **best** checkpoints and prints metrics (classification report for supervised and linear-probe models).
-- **Scripts:** Per-config PowerShell helpers under `scripts/` (e.g. `simclr_cifar10.ps1`, `linear_probe_cifar10.ps1`) set `experiment_dir` and run `train.py` / `test.py`. `run_infra_test.ps1` runs several non-ImageNet configs in sequence and skips test for SimCLR (no test dataloader).
+- **Scripts:** Per-config Bash helpers under `scripts/` (e.g. `simclr_cifar10.sh`, `linear_probe_cifar10.sh`) set `experiment_dir` and run `train.py` / `test.py`. `run_infra_test.sh` runs several non-ImageNet configs in sequence and skips test for SimCLR (no test dataloader).
 
 ## Project structure
 
@@ -47,14 +47,15 @@ visualizations/
   reporting.py             # Plot confusion matrix from linear_probe_metrics.json (matplotlib)
 
 scripts/
-  simple_classifier_mnist.ps1
-  resnet18_cifar10.ps1
-  resnet50_cifar10.ps1
-  resnet50_imagenet.ps1
-  simclr_cifar10.ps1
-  simclr_imagenet.ps1
-  linear_probe_cifar10.ps1 # Linear probe: set $pretrainedCkpt to SimCLR checkpoint; train + test
-  run_infra_test.ps1       # Batch run: MNIST, resnet18/50 CIFAR-10, simclr_cifar10; test skipped for SimCLR
+  simple_classifier_mnist.sh
+  resnet18_cifar10.sh
+  resnet50_cifar10.sh
+  resnet50_imagenet.sh
+  simclr_cifar10.sh
+  simclr_imagenet.sh
+  linear_probe_cifar10.sh  # Linear probe: auto-discovers latest SimCLR last.ckpt, or pass PRETRAINED_CKPT
+  postprocess_linear_probe.sh # Build report/figure/manifest from one run directory
+  run_infra_test.sh        # Batch run: MNIST, resnet18/50 CIFAR-10, simclr_cifar10; test skipped for SimCLR
 
 experiments/               # One folder per run (when using script or experiment_dir)
   <name>_<timestamp>/
@@ -119,27 +120,39 @@ python src/test.py experiment_dir=./experiments/mnist_20260314_123456
 
 Test runs on both `last.ckpt` and any `best-*.ckpt` in `experiment_dir/checkpoints/`.
 
-**PowerShell scripts** (train + test, one log under `experiments/<name>_<timestamp>/run.log`):
+**Bash scripts** (train + test, one log under `experiments/<name>_<timestamp>/run.log`):
 
-```powershell
-.\scripts\simclr_cifar10.ps1
-.\scripts\linear_probe_cifar10.ps1
+```bash
+./scripts/simclr_cifar10.sh
+./scripts/linear_probe_cifar10.sh
 ```
 
-Edit variables at the top of each script (`$dataDir`, `$pretrainedCkpt` for linear probe, epochs, batch size). The scripts set `experiment_dir` and `hydra.run.dir` so artifacts stay in one folder.
+Override settings with env vars at invocation time (for example: `MAX_EPOCHS=10 BATCH_SIZE=128 ./scripts/resnet18_cifar10.sh`). The scripts set `experiment_dir` and `hydra.run.dir` so artifacts stay in one folder.
+
+For linear probe, either let the script auto-discover the most recent SimCLR `last.ckpt`, or pass one explicitly:
+
+```bash
+PRETRAINED_CKPT=/path/to/last.ckpt ./scripts/linear_probe_cifar10.sh
+```
 
 **Infra test script** (several non-ImageNet configs in one go):
 
-```powershell
-.\scripts\run_infra_test.ps1
+```bash
+./scripts/run_infra_test.sh
 ```
 
-Runs default config (MNIST), `resnet18_cifar10`, `resnet50_cifar10`, and `simclr_cifar10` in sequence. Test is skipped for SimCLR. Edit `$dataRoot`, `$max_epochs`, etc. at the top of the script.
+Runs default config (MNIST), `resnet18_cifar10`, `resnet50_cifar10`, and `simclr_cifar10` in sequence. Test is skipped for SimCLR. Override values via env vars, e.g. `DATA_ROOT=/mnt/c/data MAX_EPOCHS=1 ./scripts/run_infra_test.sh`.
 
 **Visualization (linear probe):** After testing, point `visualizations/reporting.py` at `linear_probe_metrics.json` to save a confusion matrix PNG (default: `reports/figures/confusion_matrix.png`).
 
 ```bash
 python visualizations/reporting.py path/to/linear_probe_metrics.json
+```
+
+Or generate per-run report artifacts directly inside an experiment folder:
+
+```bash
+./scripts/postprocess_linear_probe.sh /path/to/experiments/linear_probe_cifar10_YYYYMMDD_HHMMSS
 ```
 
 **ImageNet:** Data must be WebDataset `.tar` shards (e.g. `imagenet-train-000000.tar`, `imagenet-val-000000.tar`). Use `misc/prepare_imagenet.ps1` and `misc/imagenet_to_webdataset.py` to build them. Set `datamodule.data_dir` to the directory containing the tars, then run with `--config-name=resnet50_imagenet` or `--config-name=simclr_imagenet`.
