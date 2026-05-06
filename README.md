@@ -66,9 +66,9 @@ experiments/               # One folder per run (when using script or experiment
     linear_probe_metrics.json  # After linear probe test (under Hydra output dir when using that workflow)
 
 misc/                      # ImageNet → WebDataset
-  prepare_imagenet.ps1
+  prepare_imagenet.sh        # Prepare ILSVRC2012 ImageNet datasets
   imagenet_to_webdataset.py
-  imagenet_to_webdataset.ps1
+  imagenet_to_webdataset.sh  # Convert ImageNet to WebDataset format
 
 reports/                   # Optional: figures (e.g. confusion matrix PNG from visualizations/reporting.py)
   figures/
@@ -155,7 +155,37 @@ Or generate per-run report artifacts directly inside an experiment folder:
 ./scripts/postprocess_linear_probe.sh /path/to/experiments/linear_probe_cifar10_YYYYMMDD_HHMMSS
 ```
 
-**ImageNet:** Data must be WebDataset `.tar` shards (e.g. `imagenet-train-000000.tar`, `imagenet-val-000000.tar`). Use `misc/prepare_imagenet.ps1` and `misc/imagenet_to_webdataset.py` to build them. Set `datamodule.data_dir` to the directory containing the tars, then run with `--config-name=resnet50_imagenet` or `--config-name=simclr_imagenet`.
+**ImageNet:** Data must be WebDataset `.tar` shards (e.g. `imagenet-train-000000.tar`, `imagenet-val-000000.tar`). Use `misc/prepare_imagenet.sh` and `misc/imagenet_to_webdataset.sh` to build them from raw ILSVRC2012 archives. Set `datamodule.data_dir` to the directory containing the tars, then run with `--config-name=resnet50_imagenet` or `--config-name=simclr_imagenet`.
+
+## ImageNet Data Preparation
+
+**Step 1: Prepare raw ImageNet archives**
+
+```bash
+# Extract and organize ILSVRC2012 archives
+./misc/prepare_imagenet.sh /path/to/imagenet/root
+
+# Or use default location (/c/data/IMAGENET1K)
+./misc/prepare_imagenet.sh
+```
+
+This script:
+- Extracts devkit archives (Task 1&2 and Task 3)
+- Extracts train/val/test image archives
+- Expands individual class tar files within training sets
+- Creates organized directory structure for ImageNet datasets
+
+**Step 2: Convert to WebDataset format**
+
+```bash
+# Convert organized ImageNet to WebDataset .tar shards
+./misc/imagenet_to_webdataset.sh
+```
+
+This creates streaming-friendly tar shards optimized for PyTorch training with different shard sizes:
+- Train: 2000 samples per shard
+- Validation: 500 samples per shard  
+- Test: 1000 samples per shard
 
 ## Config
 
